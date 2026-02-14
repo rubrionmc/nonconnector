@@ -7,7 +7,7 @@ import net.minestom.server.listener.manager.PacketListenerManager;
 import net.minestom.server.network.ConnectionState;
 import net.minestom.server.network.packet.client.handshake.ClientHandshakePacket;
 
-public class RubrionNonConnector {
+public class RubrionNonConnectorService {
 
     static void main(String[] args) {
 

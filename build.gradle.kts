@@ -26,7 +26,7 @@ tasks.jar {
     archiveBaseName.set("server")
     archiveVersion.set("local")
     manifest {
-        attributes["Main-Class"] = "net.rubrion.server.nonconnector.RubrionFallbackServer"
+        attributes["Main-Class"] = "net.rubrion.server.nonconnector.RubrionNonConnectorService"
     }
 
     // ich weiss nicht ob das gut ist das da 7 errors sind aber es funktioniert
