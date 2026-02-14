@@ -1,1 +1,1 @@
-rootProject.name = "fallback"
+rootProject.name = "nonconnector"

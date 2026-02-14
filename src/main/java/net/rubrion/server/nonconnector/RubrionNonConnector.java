@@ -1,19 +1,13 @@
-package net.rubrion.server;
+package net.rubrion.server.nonconnector;
 
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.GlobalEventHandler;
-import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.listener.manager.PacketListenerManager;
 import net.minestom.server.network.ConnectionState;
 import net.minestom.server.network.packet.client.handshake.ClientHandshakePacket;
-import net.minestom.server.network.player.PlayerConnection;
-import net.minestom.server.ping.Status;
-import net.minestom.server.utils.identity.NamedAndIdentified;
 
-import java.util.List;
-
-public class RubrionFallbackServer {
+public class RubrionNonConnector {
 
     static void main(String[] args) {
 
