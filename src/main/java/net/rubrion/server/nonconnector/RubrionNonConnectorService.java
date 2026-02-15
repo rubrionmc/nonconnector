@@ -41,11 +41,11 @@ public class RubrionNonConnectorService {
         eventHandler.addListener(ServerListPingEvent.class , event -> {
             // todo: use the common lib to build status message
             event.setStatus(Status.builder()
-                            .versionInfo(new Status.VersionInfo("No Connection", -1))
+                            .versionInfo(new Status.VersionInfo("§4No Connection§r", -1))
                             .description(Component.text("Rubrion Non-Connector Service"))
                             .enforcesSecureChat(false)
                             .playerInfo(Status.PlayerInfo.builder()
-                                    .maxPlayers(-1)
+                                    .maxPlayers(1)
                                     .onlinePlayers(0)
                                     .sample("Your mom")
                                     .build())
