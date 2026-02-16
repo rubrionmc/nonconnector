@@ -3,31 +3,37 @@ package net.rubrion.server.serverlist;
 import lombok.NonNull;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.TextColor;
 
 import net.minestom.server.ping.Status;
 import net.minestom.server.utils.identity.NamedAndIdentified;
 
+import net.rubrion.server.branding.Brands;
+import net.rubrion.server.chars.MinecraftCharacter;
 import net.rubrion.server.protocol.ProtocolOptional;
 import net.rubrion.server.protocol.Version;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public interface ServerList {
 
+    // todo: move messages to labels and may make them translatable
     Response NO_CONNECTION = response()
             .playerInfo(new PlayerInfo(0, 0))
             .toolTipInfo(List.of("§fNo Connection Found!",
                     "§7Fail to connect you to",
-                    "§7a healthy §6Rubrion §7server."))
-            .stateColor(ProtocolOptional.with((TextColor) NamedTextColor.RED)
-                    .since(Version.V1_16_0, TextColor.color(0xFF0000))) // 1.16+ supports true type colors
-            .versionInfo(ProtocolOptional.with(new VersionInfo("§70§8/§40§r", -1))
-                    .since(Version.V1_16_0, new VersionInfo("§70§8/§40§r", -1))) // 1.16+ supports small fonts
+                    "§7a healthy §fRubrion §7server."))
+            .stateColor(ProtocolOptional.with(new StateColor(NamedTextColor.DARK_RED))
+                    .since(Version.V1_16_0, new StateColor(TextColor.color(0xFF0000),
+                            ShadowColor.shadowColor(0xFF820000)))) // 1.16+ supports true type colors and shadows
+            .versionInfo(ProtocolOptional.with(new VersionInfo("§70§8/§40§r", -1)))
             .messages(List.of("Houston, we have a problem.",
                     "No connection detected, even the aliens gave up.",
                     "Our hamsters stopped running the server wheels.",
@@ -96,7 +102,7 @@ public interface ServerList {
                     "Server unreachable, reality unstable.",
                     "Proxy is screaming internally.",
                     "Connection lost, blame dark matter."))
-            .versionRange("Sorry no connection available.")
+            .versionRange("1.16-1.21.11")
             .locale(ProtocolOptional.with("N/A")
                     .since(Version.V1_16_0, "ɴ/ᴀ"))
             .enforceSecureChat(true);
@@ -107,6 +113,10 @@ public interface ServerList {
     }
 
     class Response {
+        protected static final int MOTD_LINE_SIZE = 7 * 18 + 3; // keep in mind that we have 7 * 18 + 7 = 133 but with padding its just 7 * 18 + 3
+        protected static final ProtocolOptional<MinecraftCharacter> SPACE = ProtocolOptional.with(MinecraftCharacter.resolve(' '))
+                .since(Version.V1_16_0, MinecraftCharacter.resolve('\u3000')); // 1.16+ supports this char
+
         protected ProtocolOptional<VersionInfo> versionInfo;
         protected PlayerInfo playerInfo;
         protected List<String> toolTipInfo;
@@ -114,14 +124,8 @@ public interface ServerList {
         protected String versionRange;
         protected ProtocolOptional<String> locale;
         protected boolean enforceSecureChat;
-        protected ProtocolOptional<TextColor> stateColor;
+        protected ProtocolOptional<StateColor> stateColor;
 
-        protected static final int MOTD_LINE_SIZE = 46; // default chars have 5 pixels its 64 ' ' spaces
-        protected static final int TOOL_TIP_LINE_SIZE = 28;
-        protected static final ProtocolOptional<Character> SPACE_CHAR = ProtocolOptional.with(' ')
-                .since(Version.V1_16_0, '\u3000'); // 1.16+ supports this char
-
-        // todo: 4 '\u3000' are the same as 9 ' ' use this knowledge for supporting older versions better
         // todo: add favicon support, for now we just return a placeholder
 
         protected Response() {
@@ -129,10 +133,10 @@ public interface ServerList {
             toolTipInfo = List.of("Welcome to Rubrion!");
             playerInfo = new PlayerInfo(0, 0);
             messages = List.of("A Rubrion Server");
-            versionRange = "1.20.*-1.21.11";
+            versionRange = "1.20-1.21.11";
             enforceSecureChat = false; // I think this is not even used by the client, but we'll set it to false just in case
-            stateColor = ProtocolOptional.with((TextColor) NamedTextColor.GREEN)
-                    .since(Version.V1_16_0, TextColor.color(0x00FF00)); // 1.16+ supports true type colors
+            stateColor = ProtocolOptional.with(new StateColor(NamedTextColor.GREEN))
+                    .since(Version.V1_16_0, new StateColor(TextColor.color(0x00FF00), ShadowColor.shadowColor(0xFF000000))); // 1.16+ supports true type colors and shadows
             locale = ProtocolOptional.with("DE")
                     .since(Version.V1_16_0, "ᴅᴇ"); // 1.16+ supports small fonts
         }
@@ -147,13 +151,13 @@ public interface ServerList {
             return this;
         }
 
-        public @NonNull Response stateColor(final @NonNull TextColor stateColor) {
-            this.stateColor = ProtocolOptional.with((TextColor) NamedTextColor.nearestTo(stateColor))
+        public @NonNull Response stateColor(final @NonNull StateColor stateColor) {
+            this.stateColor = ProtocolOptional.with(new StateColor(NamedTextColor.nearestTo(stateColor.textColor()), null))
                     .since(Version.V1_16_0, stateColor); // 1.16+ supports true type colors
             return this;
         }
 
-        public @NonNull Response stateColor(final @NonNull ProtocolOptional<TextColor> stateColor) {
+        public @NonNull Response stateColor(final @NonNull ProtocolOptional<StateColor> stateColor) {
             this.stateColor = stateColor;
             return this;
         }
@@ -197,10 +201,44 @@ public interface ServerList {
             return status(version.getProtocol());
         }
 
-        protected @NonNull Component buildDescription() {
-            String randomMessage = messages.get((int) (Math.random() * messages.size()));
-            // todo: add build description logic, for now we just return a placeholder
-            return Component.text("this is a test hier für adhs eine message: " + randomMessage);
+        protected @NonNull Component buildDescription(final int protocol) {
+            final String randomMessage = messages.get((int) (Math.random() * messages.size()));
+
+            final int fillWight = MOTD_LINE_SIZE - MinecraftCharacter.len("  ")
+                    - MinecraftCharacter.len(Brands.RUBRION.resolve(protocol).content())
+                    - MinecraftCharacter.len(versionRange)
+                    - MinecraftCharacter.len(locale.resolve(protocol));
+
+            final Component spaceComponent = Component.text(SPACE.resolve(protocol).fill(fillWight));
+
+            final TextComponent localeComponent = Component.text(locale.resolve(protocol),
+                    stateColor.resolve(protocol).textColor());
+
+            if (stateColor.resolve(protocol).shadowColor() != null) {
+                //noinspection ResultOfMethodCallIgnored because: is applyed and dont have to be assigned again
+                localeComponent.shadowColor(stateColor.resolve(protocol).shadowColor());
+            }
+
+            final TextComponent title = Component.empty().append(
+                    Brands.RUBRION.resolve(protocol),
+                    Component.space(),
+                    Component.text(versionRange, NamedTextColor.DARK_GRAY),
+                    spaceComponent,
+                    Component.space(),
+                    Component.space(), // extra space for padding (this is cheating)
+                    localeComponent);
+
+            final TextComponent message = Component.empty().append(
+                    Component.text("» ", NamedTextColor.DARK_GRAY),
+                    Component.text(randomMessage, NamedTextColor.GRAY)
+            );
+
+
+            if (MinecraftCharacter.len(title.content()) > MOTD_LINE_SIZE) {
+                throw new UnsupportedOperationException("Version range is too long, max " + MOTD_LINE_SIZE + " char size");
+            }
+
+            return Component.empty().append(title, Component.newline(), message);
         }
 
 
@@ -222,7 +260,7 @@ public interface ServerList {
 
             return Status.builder()
                     .enforcesSecureChat(enforceSecureChat)
-                    .description(buildDescription())
+                    .description(buildDescription(protocol))
                     .favicon(buildFaviconMinestom())
                     .versionInfo(new Status.VersionInfo(
                             versionInfo.name(),
@@ -240,6 +278,15 @@ public interface ServerList {
             @NonNull String name,
             int protocol
     ) { }
+
+    record StateColor(
+            @NonNull TextColor textColor,
+            @Nullable ShadowColor shadowColor
+            ) {
+            public StateColor(final @NonNull TextColor textColor) {
+                this(textColor, null);
+            }
+    }
 
     record PlayerInfo(
             int maxPlayers,
