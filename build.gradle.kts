@@ -1,9 +1,12 @@
 plugins {
-    id("java")
+    java
+    `maven-publish`
+    alias(libs.plugins.shadow) apply false
+    alias(libs.plugins.lombok)
 }
 
 group = "net.rubrion.server"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
     mavenCentral()
