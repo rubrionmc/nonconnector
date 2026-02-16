@@ -1,7 +1,9 @@
 package net.rubrion.server.serverlist;
 
+import lombok.Builder;
 import lombok.NonNull;
 
+import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -13,14 +15,22 @@ import net.minestom.server.utils.identity.NamedAndIdentified;
 
 import net.rubrion.server.branding.Brands;
 import net.rubrion.server.chars.MinecraftCharacter;
+import net.rubrion.server.docker.DockerFile;
 import net.rubrion.server.protocol.ProtocolOptional;
 import net.rubrion.server.protocol.Version;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public interface ServerList {
 
@@ -103,6 +113,7 @@ public interface ServerList {
                     "Proxy is screaming internally.",
                     "Connection lost, blame dark matter."))
             .versionRange("1.16-1.21.11")
+            .favicon(Favicon.body(DockerFile.fromServer("icons/unhealthy-body-x64.png")))
             .locale(ProtocolOptional.with("N/A")
                     .since(Version.V1_16_0, "ɴ/ᴀ"))
             .enforceSecureChat(true);
@@ -119,14 +130,13 @@ public interface ServerList {
 
         protected ProtocolOptional<VersionInfo> versionInfo;
         protected PlayerInfo playerInfo;
+        protected Favicon favicon;
         protected List<String> toolTipInfo;
         protected List<String> messages;
         protected String versionRange;
         protected ProtocolOptional<String> locale;
         protected boolean enforceSecureChat;
         protected ProtocolOptional<StateColor> stateColor;
-
-        // todo: add favicon support, for now we just return a placeholder
 
         protected Response() {
             versionInfo = ProtocolOptional.with(new VersionInfo("Rubrion v1.0", 0));
@@ -135,6 +145,7 @@ public interface ServerList {
             messages = List.of("A Rubrion Server");
             versionRange = "1.20-1.21.11";
             enforceSecureChat = false; // I think this is not even used by the client, but we'll set it to false just in case
+            favicon = Favicon.body(DockerFile.fromServer("icons/icon-body-x64.png"));
             stateColor = ProtocolOptional.with(new StateColor(NamedTextColor.GREEN))
                     .since(Version.V1_16_0, new StateColor(TextColor.color(0x00FF00), ShadowColor.shadowColor(0xFF000000))); // 1.16+ supports true type colors and shadows
             locale = ProtocolOptional.with("DE")
@@ -148,6 +159,11 @@ public interface ServerList {
 
         public @NonNull Response versionInfo(final @NonNull ProtocolOptional<VersionInfo> versionInfo) {
             this.versionInfo = versionInfo;
+            return this;
+        }
+
+        public @NonNull Response favicon(final @NonNull Favicon favicon) {
+            this.favicon = favicon;
             return this;
         }
 
@@ -251,8 +267,44 @@ public interface ServerList {
 
         @Contract(pure = true)
         protected byte @NonNull [] buildFaviconMinestom() {
-            // todo: add build favicon logic, for now we just return a placeholder
-            return new byte[20];
+            BufferedImage[] layers = new BufferedImage[] {
+                    favicon.background, favicon.body,
+                    favicon.overlay, favicon.hat
+            };
+
+            BufferedImage base = null;
+            for (BufferedImage img : layers) {
+                if (img != null) {
+                    base = img;
+                    break;
+                }
+            }
+
+            if (base == null) return new byte[0]; // may build standard empty favicon
+
+            BufferedImage merged = new BufferedImage(
+                    base.getWidth(),
+                    base.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            Graphics2D g = merged.createGraphics();
+            g.setComposite(AlphaComposite.SrcOver);
+
+            for (BufferedImage img : layers) {
+                if (img != null) g.drawImage(img,
+                        0, 0, null);
+            }
+
+            g.dispose();
+
+            try {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                ImageIO.write(merged, "png", out);
+                return out.toByteArray();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to build favicon, invalid image", e);
+            }
         }
 
         public @NonNull Status status(final int protocol) {
@@ -293,4 +345,95 @@ public interface ServerList {
             int onlinePlayers
     ) { }
 
+    class FaviconLoadException extends RuntimeException {
+
+        public FaviconLoadException(final @NonNull File file, final @NonNull Throwable cause) {
+            super("Failed to load favicon image: " + file.getPath()
+                    + " (make sure it exists and is a valid image)", cause);
+        }
+
+        public FaviconLoadException(final @NonNull String path, final @NonNull Throwable cause) {
+            super("Failed to load favicon image: " + path
+                    + " (make sure it exists and is a valid image)", cause);
+        }
+    }
+
+    class Favicon {
+
+        public static @NonNull Favicon body(
+                final @NonNull BufferedImage body) {
+            return new Favicon().withBody(body);
+        }
+
+
+        public static @NonNull Favicon body(
+                final @NonNull File body) {
+            try {
+                return Favicon.body(ImageIO.read(body));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to load default favicon, make sure the file 'icons/icon-x64.png' exists and is a valid image", e);
+            }
+        }
+
+        protected BufferedImage hat;
+        protected BufferedImage overlay;
+        protected BufferedImage body;
+        protected BufferedImage background;
+
+        protected Favicon() {
+                this.hat = null;
+                this.overlay = null;
+                this.body = null;
+                this.background = null;
+        }
+
+        public Favicon withHat(final @Nullable BufferedImage hat) {
+            this.hat = hat;
+            return this;
+        }
+
+        public Favicon withOverlay(final @Nullable BufferedImage overlay) {
+            this.overlay = overlay;
+            return this;
+        }
+
+        public Favicon withBody(final @Nullable BufferedImage body) {
+            this.body = body;
+            return this;
+        }
+
+        public Favicon withBackground(final @Nullable BufferedImage background) {
+            this.background = background;
+            return this;
+        }
+
+        public Favicon withHat(final @NonNull File hat) {
+            this.hat = loadImage(hat);
+            return this;
+        }
+
+        public Favicon withOverlay(final @NonNull File overlay) {
+            this.overlay = loadImage(overlay);
+            return this;
+        }
+
+        public Favicon withBody(final @NonNull File body) {
+            this.body = loadImage(body);
+            return this;
+        }
+
+        public Favicon withBackground(final @NonNull File background) {
+            this.background = loadImage(background);
+            return this;
+        }
+
+        private static BufferedImage loadImage(File file) {
+            try {
+                return ImageIO.read(file);
+            } catch (IOException e) {
+                throw new FaviconLoadException(file, e);
+            }
+        }
+
+    }
 }

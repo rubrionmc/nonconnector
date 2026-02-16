@@ -33,6 +33,8 @@ ENV PATH="/opt/jdk/bin:$PATH"
 
 COPY --from=jlink-base /opt/server/ /opt/server/
 
+COPY .server /opt/server/
+
 EXPOSE 25575
 
 RUN printf '%s\n' '#!/bin/bash' \
