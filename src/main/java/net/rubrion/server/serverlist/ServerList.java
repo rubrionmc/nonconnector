@@ -1,9 +1,7 @@
 package net.rubrion.server.serverlist;
 
-import lombok.Builder;
 import lombok.NonNull;
 
-import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -30,13 +28,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 public interface ServerList {
 
     // todo: move messages to labels and may make them translatable
     Response NO_CONNECTION = response()
-            .playerInfo(new PlayerInfo(0, 0))
+            .playerInfo(new PlayerInfo(Integer.MAX_VALUE, Integer.MAX_VALUE))
             .toolTipInfo(List.of("§fNo Connection Found!",
                     "§7Fail to connect you to",
                     "§7a healthy §fRubrion §7server."))
@@ -114,6 +111,7 @@ public interface ServerList {
                     "Connection lost, blame dark matter."))
             .versionRange("1.16-1.21.11")
             .favicon(Favicon.body(DockerFile.fromServer("icons/unhealthy-body-x64.png")))
+            .brand(Brands.RUBRION_ERROR)
             .locale(ProtocolOptional.with("N/A")
                     .since(Version.V1_16_0, "ɴ/ᴀ"))
             .enforceSecureChat(true);
@@ -129,6 +127,7 @@ public interface ServerList {
                 .since(Version.V1_16_0, MinecraftCharacter.resolve('\u3000')); // 1.16+ supports this char
 
         protected ProtocolOptional<VersionInfo> versionInfo;
+        protected ProtocolOptional<TextComponent> brand;
         protected PlayerInfo playerInfo;
         protected Favicon favicon;
         protected List<String> toolTipInfo;
@@ -139,16 +138,17 @@ public interface ServerList {
         protected ProtocolOptional<StateColor> stateColor;
 
         protected Response() {
-            versionInfo = ProtocolOptional.with(new VersionInfo("Rubrion v1.0", 0));
-            toolTipInfo = List.of("Welcome to Rubrion!");
-            playerInfo = new PlayerInfo(0, 0);
-            messages = List.of("A Rubrion Server");
-            versionRange = "1.20-1.21.11";
-            enforceSecureChat = false; // I think this is not even used by the client, but we'll set it to false just in case
-            favicon = Favicon.body(DockerFile.fromServer("icons/icon-body-x64.png"));
-            stateColor = ProtocolOptional.with(new StateColor(NamedTextColor.GREEN))
+            this.versionInfo = ProtocolOptional.with(new VersionInfo("Rubrion v1.0", 0));
+            this.toolTipInfo = List.of("Welcome to Rubrion!");
+            this.playerInfo = new PlayerInfo(0, 0);
+            this.messages = List.of("A Rubrion Server");
+            this.versionRange = "1.20-1.21.11";
+            this.enforceSecureChat = false; // I think this is not even used by the client, but we'll set it to false just in case
+            this.brand = Brands.RUBRION;
+            this.favicon = Favicon.body(DockerFile.fromServer("icons/icon-body-x64.png"));
+            this.stateColor = ProtocolOptional.with(new StateColor(NamedTextColor.GREEN))
                     .since(Version.V1_16_0, new StateColor(TextColor.color(0x00FF00), ShadowColor.shadowColor(0xFF000000))); // 1.16+ supports true type colors and shadows
-            locale = ProtocolOptional.with("DE")
+            this.locale = ProtocolOptional.with("DE")
                     .since(Version.V1_16_0, "ᴅᴇ"); // 1.16+ supports small fonts
         }
 
@@ -159,6 +159,11 @@ public interface ServerList {
 
         public @NonNull Response versionInfo(final @NonNull ProtocolOptional<VersionInfo> versionInfo) {
             this.versionInfo = versionInfo;
+            return this;
+        }
+
+        public @NonNull Response brand(final @NonNull ProtocolOptional<TextComponent> brand) {
+            this.brand = brand;
             return this;
         }
 
@@ -221,7 +226,7 @@ public interface ServerList {
             final String randomMessage = messages.get((int) (Math.random() * messages.size()));
 
             final int fillWight = MOTD_LINE_SIZE - MinecraftCharacter.len("  ")
-                    - MinecraftCharacter.len(Brands.RUBRION.resolve(protocol).content())
+                    - MinecraftCharacter.len(brand.resolve(protocol).content())
                     - MinecraftCharacter.len(versionRange)
                     - MinecraftCharacter.len(locale.resolve(protocol));
 
@@ -236,7 +241,7 @@ public interface ServerList {
             }
 
             final TextComponent title = Component.empty().append(
-                    Brands.RUBRION.resolve(protocol),
+                    brand.resolve(protocol),
                     Component.space(),
                     Component.text(versionRange, NamedTextColor.DARK_GRAY),
                     spaceComponent,

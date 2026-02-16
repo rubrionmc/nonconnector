@@ -17,4 +17,12 @@ public interface Brands {
 
     ProtocolOptional<TextComponent> RUBRION = ProtocolOptional.with(RUBRION_NAMED)
             .since(Version.V1_16_0, RUBRION_FLAT);
+
+    TextComponent RUBRION_ERROR_FLAT = Component.text("Rubrion", TextColor.color(0xFF0000))
+            .decorate(TextDecoration.BOLD);
+    TextComponent RUBRION_ERROR_NAMED = Component.text("Rubrion", NamedTextColor.DARK_RED)
+            .decorate(TextDecoration.BOLD);
+
+    ProtocolOptional<TextComponent> RUBRION_ERROR = ProtocolOptional.with(RUBRION_ERROR_NAMED)
+            .since(Version.V1_16_0, RUBRION_ERROR_FLAT);
 }
