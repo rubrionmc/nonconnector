@@ -1,8 +1,5 @@
 package net.rubrion.server.nonconnector;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.server.ServerListPingEvent;
@@ -41,14 +38,6 @@ public class RubrionNonConnectorService {
             if (packet.intent().ordinal() == 0) return;
 
             // todo: use the common lib to build nice message
-            // todo: make packet check and send a LegacyKickMessage if the client not support Components
-            if (packet.protocolVersion() >= 735) { // 1.16+
-                connection.kick(Component.text("This is the new nice color system", TextColor.color(0xFF0000)));
-                connection.disconnect();
-                return;
-            }
-            // older than 1.16
-            connection.kick(Component.text("This is only true type", NamedTextColor.DARK_PURPLE));
             connection.disconnect();
         });
 
@@ -59,5 +48,6 @@ public class RubrionNonConnectorService {
         });
 
         minecraftServer.start("0.0.0.0", 25575);
+        System.out.println("Rubrion Non-Connector Service started on port 25575");
     }
 }

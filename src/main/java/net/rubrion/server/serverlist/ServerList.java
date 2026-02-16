@@ -33,7 +33,7 @@ public interface ServerList {
 
     // todo: move messages to labels and may make them translatable
     Response NO_CONNECTION = response()
-            .playerInfo(new PlayerInfo(Integer.MAX_VALUE, Integer.MAX_VALUE))
+            .playerInfo(new PlayerInfo(0, 0))
             .toolTipInfo(List.of("§fNo Connection Found!",
                     "§7Fail to connect you to",
                     "§7a healthy §fRubrion §7server."))
@@ -122,7 +122,7 @@ public interface ServerList {
     }
 
     class Response {
-        protected static final int MOTD_LINE_SIZE = 7 * 18 + 3; // keep in mind that we have 7 * 18 + 7 = 133 but with padding its just 7 * 18 + 3
+        protected static final int MOTD_LINE_SIZE = 7 * 18 + 4; // keep in mind that we have 7 * 18 + 7 = 133 but with padding its just 7 * 18 + 4
         protected static final ProtocolOptional<MinecraftCharacter> SPACE = ProtocolOptional.with(MinecraftCharacter.resolve(' '))
                 .since(Version.V1_16_0, MinecraftCharacter.resolve('\u3000')); // 1.16+ supports this char
 
