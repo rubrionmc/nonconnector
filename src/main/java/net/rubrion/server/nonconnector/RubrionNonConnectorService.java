@@ -8,10 +8,12 @@ import de.leycm.linguae.mapping.MappingRule;
 import de.leycm.linguae.serialize.LabelSerializer;
 import de.leycm.linguae.source.JsonFileSource;
 import de.leycm.neck.instance.Initializable;
+
 import lombok.NonNull;
-import net.kyori.adventure.text.Component;
+
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.server.ServerListPingEvent;
@@ -24,7 +26,6 @@ import net.rubrion.server.docker.DockerFile;
 import net.rubrion.server.serverlist.ServerList;
 
 import java.lang.reflect.Field;
-import java.text.ParseException;
 import java.util.Locale;
 
 
@@ -33,7 +34,7 @@ public class RubrionNonConnectorService {
     @SuppressWarnings("UnstableApiUsage")
     // caused by: PlayerSocketConnection
     // reason: the protocol version is getting dropped by listening on the ClientHandshakePacket
-    static void main(String[] args) {
+    static void main() {
 
         Initializable.register(CommonLinguaeProvider.builder()
                         .mappingRule(MappingRule.MINI_MESSAGE)
@@ -44,7 +45,7 @@ public class RubrionNonConnectorService {
                             }
 
                             @Override
-                            public @NonNull Label deserialize(@NonNull TextComponent component) throws ParseException {
+                            public @NonNull Label deserialize(@NonNull TextComponent component) {
                                 throw new UnsupportedOperationException("Component deserialization is not supported yet");
                             }
 
