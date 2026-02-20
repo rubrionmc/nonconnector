@@ -110,7 +110,7 @@ public interface ServerList {
                     "Proxy is screaming internally.",
                     "Connection lost, blame dark matter."))
             .versionRange("1.16-1.21.11")
-            .favicon(Favicon.body(DockerFile.fromServer("icons/unhealthy-body-x64.png")))
+            .favicon(Favicon.body(DockerFile.fileFromServerDir("icons/unhealthy-body-x64.png")))
             .brand(Brands.RUBRION_ERROR)
             .locale(ProtocolOptional.with("N/A")
                     .since(Version.V1_16_0, "ɴ/ᴀ"))
@@ -145,7 +145,7 @@ public interface ServerList {
             this.versionRange = "1.20-1.21.11";
             this.enforceSecureChat = false; // I think this is not even used by the client, but we'll set it to false just in case
             this.brand = Brands.RUBRION;
-            this.favicon = Favicon.body(DockerFile.fromServer("icons/icon-body-x64.png"));
+            this.favicon = Favicon.body(DockerFile.fileFromServerDir("icons/icon-body-x64.png"));
             this.stateColor = ProtocolOptional.with(new StateColor(NamedTextColor.GREEN))
                     .since(Version.V1_16_0, new StateColor(TextColor.color(0x00FF00), ShadowColor.shadowColor(0xFF000000))); // 1.16+ supports true type colors and shadows
             this.locale = ProtocolOptional.with("DE")

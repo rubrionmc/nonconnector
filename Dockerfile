@@ -17,7 +17,7 @@ FROM eclipse-temurin:25-jdk AS jlink-base
 
 RUN jlink \
     --output /opt/jdk-custom \
-    --add-modules java.base,java.logging,java.management,java.instrument,java.desktop,jdk.unsupported \
+    --add-modules java.base,java.logging,java.management,java.instrument,java.desktop,java.net.http,jdk.unsupported, \
     --compress=2 \
     --no-header-files \
     --no-man-pages \
@@ -25,7 +25,7 @@ RUN jlink \
 
 COPY --from=builder /app.jar /opt/server/server.jar
 
-FROM ubuntu:26.04 AS runtime
+FROM debian:12-slim AS runtime
 WORKDIR /opt/server
 
 COPY --from=jlink-base /opt/jdk-custom /opt/jdk

@@ -10,15 +10,30 @@ version = "1.0"
 
 repositories {
     mavenCentral()
+    maven("https://leycm.github.io/repository/")
 }
 
 dependencies {
-    implementation("net.minestom:minestom:2026.02.09-1.21.11")
     implementation("org.slf4j:slf4j-simple:2.0.17")
+    implementation("de.leycm.linguae:api:1.2.1")
+    implementation("de.leycm.linguae:common:1.2.1") {
+        exclude(group = "com.google.code.gson", module = "gson")
+    }
+    implementation("net.minestom:minestom:2026.01.08-1.21.11") {
+        exclude(group = "com.google.code.gson", module = "gson")
+    }
+    implementation("com.google.code.gson:gson:2.13.2")
+    implementation("net.kyori:adventure-text-minimessage:4.17.0")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("com.google.code.gson:gson:2.13.2")
+    }
 }
 
 tasks.test {
@@ -26,13 +41,12 @@ tasks.test {
 }
 
 tasks.jar {
-    archiveBaseName.set("server")
-    archiveVersion.set("local")
+    archiveBaseName.set("nonconnector")
+    archiveVersion.set(version.toString())
     manifest {
         attributes["Main-Class"] = "net.rubrion.server.nonconnector.RubrionNonConnectorService"
     }
 
-    // ich weiss nicht ob das gut ist das da 7 errors sind aber es funktioniert
     from({
         configurations.runtimeClasspath.get()
             .filter { it.name.endsWith("jar") }
