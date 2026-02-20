@@ -29,8 +29,8 @@ public interface KickMessage {
 
         protected Builder() {
             this.type = Type.DISCONNECT;
-            this.description = Label.translatable("rubrion.kick.error.disconnect.description");
-            this.reason = Label.translatable("rubrion.kick.error.disconnect.reason");
+            this.description = Label.of("rubrion.kick.error.disconnect.description");
+            this.reason = Label.of("rubrion.kick.error.disconnect.reason");
             this.author = "Server";
             this.head = Component.empty();
         }
@@ -62,8 +62,8 @@ public interface KickMessage {
         }
 
         public @NonNull TextComponent build(final int protocol, final @NonNull Locale locale) {
-            Component lineComponent = ProtocolOptional.with((Component) Component.text(Label.translatable("rubrion.kick.error.line").asComponent(locale).content(), NamedTextColor.GOLD))
-                    .since(Version.V1_16_0, Label.translatable("rubrion.kick.error.line").asComponent(locale)).resolve(protocol);
+            Component lineComponent = ProtocolOptional.with((Component) Component.text(Label.of("rubrion.kick.error.line").in(locale, TextComponent.class).content(), NamedTextColor.GOLD))
+                    .since(Version.V1_16_0, Label.of("rubrion.kick.error.line").in(locale, TextComponent.class)).resolve(protocol);
 
             TextComponent splitComponent = Component.text(" * ", NamedTextColor.WHITE);
 
@@ -118,7 +118,7 @@ public interface KickMessage {
             int failIndex,
             int code
     ) {
-        public static Type DISCONNECT = new Type(List.of("Client", "Connection", "Server"), Label.translatable("rubrion.kick.error.disconnect"), 1, 400);
+        public static Type DISCONNECT = new Type(List.of("Client", "Connection", "Server"), Label.of("rubrion.kick.error.disconnect"), 1, 400);
     }
 
 }

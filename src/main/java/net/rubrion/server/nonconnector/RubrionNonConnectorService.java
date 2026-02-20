@@ -10,6 +10,7 @@ import de.leycm.linguae.source.JsonFileSource;
 import de.leycm.neck.instance.Initializable;
 import lombok.NonNull;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.GlobalEventHandler;
@@ -36,20 +37,20 @@ public class RubrionNonConnectorService {
 
         Initializable.register(CommonLinguaeProvider.builder()
                         .mappingRule(MappingRule.MINI_MESSAGE)
-                        .withSerializer(Component.class, new LabelSerializer<Component>() {
+                        .withSerializer(TextComponent.class, new LabelSerializer<TextComponent>() {
                             @Override
-                            public @NonNull Component serialize(@NonNull Label label) {
+                            public @NonNull TextComponent serialize(@NonNull Label label) {
                                 throw new UnsupportedOperationException("Component serialization is not supported yet");
                             }
 
                             @Override
-                            public @NonNull Label deserialize(@NonNull Component component) throws ParseException {
+                            public @NonNull Label deserialize(@NonNull TextComponent component) throws ParseException {
                                 throw new UnsupportedOperationException("Component deserialization is not supported yet");
                             }
 
                             @Override
-                            public @NonNull Component format(@NonNull String s) throws FormatException {
-                                return MiniMessage.miniMessage().deserialize(s);
+                            public @NonNull TextComponent format(@NonNull String s) throws FormatException {
+                                return (TextComponent) MiniMessage.miniMessage().deserialize(s);
                             }
                         })
                         .build(new JsonFileSource(DockerFile.stringFromServerDir("lang/")))
@@ -75,7 +76,7 @@ public class RubrionNonConnectorService {
 
             connection.kick(KickMessage.builder()
                     .author("PreProxy")
-                    .description(Label.predefined("No Connection found for Rubrion pls Try again later"))
+                    .description(Label.literal("No Connection found for Rubrion pls Try again later"))
                     .type(KickMessage.Type.DISCONNECT)
                     .build(packet.protocolVersion(), Locale.US));
             connection.disconnect();
